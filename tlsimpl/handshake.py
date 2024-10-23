@@ -49,13 +49,14 @@ def send_client_hello(sock, key_exchange_pubkey: bytes) -> None:
     ext += util.pack_extension(ExtensionType.KEY_SHARE, util.pack_varlen(ks))
 
     identifier = util.pack(NamedGroup.X25519,2)
-    ext += util.pack_extension(ExtensionType.SUPPORTED_GROUPS, util.pack_varlen(util.pack_varlen(identifier)))
+    ext += util.pack_extension(ExtensionType.SUPPORTED_GROUPS, util.pack_varlen(identifier))
 
     tls13 = b"\x03\x04"
     k = util.pack_extension(ExtensionType.SUPPORTED_VERSIONS, util.pack_varlen(tls13,1))
     ext += k
 
-    ext += util.pack_extension(ExtensionType.SIGNATURE_ALGORITHMS, util.pack_varlen(util.pack_varlen(util.pack(SignatureScheme.RSA_PSS_RSAE_SHA256,2))))
+    print(hex(int.from_bytes(util.pack_extension(ExtensionType.SIGNATURE_ALGORITHMS, util.pack_varlen(util.pack_varlen(util.pack(SignatureScheme.RSA_PSS_RSAE_SHA256,2)))),"big")))
+    ext += util.pack_extension(ExtensionType.SIGNATURE_ALGORITHMS, util.pack_varlen(util.pack(SignatureScheme.RSA_PSS_RSAE_SHA256,2)))
 
     base_packet += util.pack_varlen(ext)
     packet = base_packet
