@@ -68,7 +68,22 @@ def recv_server_hello(sock: client.TLSSocket) -> bytes:
     (ty, data) = sock.recv_handshake_record()
     assert ty == HandshakeType.SERVER_HELLO
     # TODO: parse server hello and find server pubkey
-    peer_pubkey = b"???"
+    if (util.unpack(data[0]) != HandshakeType.SERVER_HELLO):
+        print("THIS IS NOT WHAT IS SUPPOSED TO HAPPEN")
+        return b'\x00'
+    data = data[6:]
+    random = data[:32]
+    data = data[32:]
+    session_id_len = util.unpack(data[0])
+    data = data[6+session_id_len:]
+    extensiondata = {}
+    while (data != b""):
+        ext_type, contents, data = util.unpack_extension(data)
+        extensiondata[ext_type] = contents
+    
+
+    peer_pubkey = extensiondata[ExtensionType.KEY_SHARE]
+    peer_pubkey = peer_pubkey[4:]
     return peer_pubkey
 
 
