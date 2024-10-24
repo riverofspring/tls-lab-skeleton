@@ -47,7 +47,6 @@ def send_client_hello(sock, key_exchange_pubkey: bytes) -> None:
     k = util.pack_extension(ExtensionType.SUPPORTED_VERSIONS, util.pack_varlen(tls13,1))
     ext += k
 
-    print(hex(int.from_bytes(util.pack_extension(ExtensionType.SIGNATURE_ALGORITHMS, util.pack_varlen(util.pack_varlen(util.pack(SignatureScheme.RSA_PSS_RSAE_SHA256,2)))),"big")))
     ext += util.pack_extension(ExtensionType.SIGNATURE_ALGORITHMS, util.pack_varlen(util.pack(SignatureScheme.RSA_PSS_RSAE_SHA256,2)))
 
     base_packet += util.pack_varlen(ext)
@@ -68,14 +67,11 @@ def recv_server_hello(sock: client.TLSSocket) -> bytes:
     (ty, data) = sock.recv_handshake_record()
     assert ty == HandshakeType.SERVER_HELLO
     # TODO: parse server hello and find server pubkey
-    if (util.unpack(data[0]) != HandshakeType.SERVER_HELLO):
-        print("THIS IS NOT WHAT IS SUPPOSED TO HAPPEN")
-        return b'\x00'
     data = data[6:]
     random = data[:32]
     data = data[32:]
-    session_id_len = util.unpack(data[0])
-    data = data[6+session_id_len:]
+    session_id_len = data[0]
+    data = data[3+session_id_len:]
     extensiondata = {}
     while (data != b""):
         ext_type, contents, data = util.unpack_extension(data)
