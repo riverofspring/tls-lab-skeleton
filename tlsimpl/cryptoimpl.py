@@ -76,8 +76,11 @@ class AESParams:
 
         Specified in RFC8446 section 5.3.
         """
-        nonce = int.from_bytes(initial_nonce ^ seq_num, 'big')
-        seq_num += 1
+        # print(type(self.initial_nonce^self.seq_num))
+        n = self.initial_nonce ^ self.seq_num
+        nonce = util.pack(n, 12)
+        # nonce = int.to_bytes(self.initial_nonce ^ self.seq_num, "big")
+        self.seq_num += 1
         # TODO: derive the nonce
         return nonce
 
@@ -111,8 +114,8 @@ def derive_handshake_params(
     server_secret = labeled_sha384_hkdf(handshake_secret, "s hs traffic".encode(), transcript_hash, 48)
     client_key = labeled_sha384_hkdf(client_secret, "key".encode(), b"", 32)
     server_key = labeled_sha384_hkdf(server_secret, "key".encode(), b"", 32)
-    client_iv = labeled_sha384_hkdf(client_secret, "key".encode(), b"", 12)
-    server_iv = labeled_sha384_hkdf(server_secret, "key".encode(), b"", 12)
+    client_iv = labeled_sha384_hkdf(client_secret, "iv".encode(), b"", 12)
+    server_iv = labeled_sha384_hkdf(server_secret, "iv".encode(), b"", 12)
     # handshake_secret = b"???"
     # client_secret = b"???"
     # server_secret = b"???"
@@ -162,4 +165,7 @@ def compute_finish(secret: bytes, transcript_hash: bytes) -> bytes:
     Takes in the client/server secret as well as the transcript hash.
     """
     # TODO: compute HMAC
+    finished_key = labeled_sha384_hkdf(secret, b'finished', b'', 48)
+    finished_hash = hashlib.sha384(transcript_hash).digest()
+    verify_data = hmac.new(finished_key, finished_hash, hashlib.sha384)
     return b"???"

@@ -89,6 +89,34 @@ def recv_server_info(sock: client.TLSSocket) -> None:
 
     Also verifies the certificate's validity.
     """
+    ty, data = sock.recv_record()
+    # print(ty)
+    # print(data[0])
+    data = data[1:]
+    ext_length = util.unpack(data[:3])
+    data = data[3:]
+    ext = data
+    ty, data = sock.recv_record()
+    # if data[0] != 0x0b:
+    #     print("what")
+    #     print(data[0])
+    data = data[1:]
+    ext_length = util.unpack(data[:3])
+    data = data[3:]
+    ext = data
+    ty, data = sock.recv_handshake_record()
+    # print(ty)
+    # print(data[0])
+    data = data[1:]
+    certificates_length = util.unpack(data[:3])
+    # print(certificates_length)
+    data = data[3:]
+    certificate_single_length = util.unpack(data[:3])
+    cert = data[:certificate_single_length]
+    data = data[certificate_single_length:]
+    cert_ext_len = data[:2]
+    ty, data2 = sock.recv_handshake_record()
+    # we are not verifying i guess
     # TODO: implement
 
 
@@ -98,6 +126,9 @@ def finish_handshake(sock: client.TLSSocket, handshake_secret: bytes) -> None:
 
     Takes in the shared secret from key exchange.
     """
+    ty, data = sock.recv_handshake_record()
+    
+    print(ty)
     # TODO: implement
 
 
