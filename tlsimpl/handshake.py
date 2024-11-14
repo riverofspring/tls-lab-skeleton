@@ -127,7 +127,8 @@ def finish_handshake(sock: client.TLSSocket, handshake_secret: bytes) -> None:
     Takes in the shared secret from key exchange.
     """
     ty, data = sock.recv_handshake_record()
-    
+    send = cryptoimpl.compute_finish(handshake_secret, sock.transcript_hash.digest())
+    sock.send_handshake_record(HandshakeType.FINISHED)
     print(ty)
     # TODO: implement
 

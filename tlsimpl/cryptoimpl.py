@@ -168,4 +168,4 @@ def compute_finish(secret: bytes, transcript_hash: bytes) -> bytes:
     finished_key = labeled_sha384_hkdf(secret, b'finished', b'', 48)
     finished_hash = hashlib.sha384(transcript_hash).digest()
     verify_data = hmac.new(finished_key, finished_hash, hashlib.sha384)
-    return b"???"
+    return verify_data
