@@ -128,8 +128,8 @@ def finish_handshake(sock: client.TLSSocket, handshake_secret: bytes) -> None:
     """
     ty, data = sock.recv_handshake_record()
     send = cryptoimpl.compute_finish(handshake_secret, sock.transcript_hash.digest())
-    sock.send_handshake_record(HandshakeType.FINISHED)
-    print(ty)
+    sock.send_handshake_record(HandshakeType.FINISHED, send.digest())
+    # print(ty)
     # TODO: implement
 
 
