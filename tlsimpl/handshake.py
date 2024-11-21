@@ -132,7 +132,10 @@ def finish_handshake(sock: client.TLSSocket, handshake_secret: bytes) -> None:
     k = cryptoimpl.compute_finish(handshake_secret, transcript).digest()
     ty, data = sock.recv_handshake_record()
     send = cryptoimpl.compute_finish(sock.client_params.original_secret, sock.transcript_hash.digest())
+    (client_params, server_params) = (cryptoimpl.derive_application_params(handshake_secret, sock.transcript_hash.digest()))    
     sock.send_handshake_record(HandshakeType.FINISHED, send.digest())
+    sock.client_params = client_params
+    sock.server_params = server_params
     # print(ty)
     # TODO: implement
 
@@ -150,5 +153,7 @@ def perform_handshake(sock: client.TLSSocket) -> None:
     )
     recv_server_info(sock)
     finish_handshake(sock, handshake_secret)
+    sock.send_record(RecordType.APPLICATION_DATA, b'ping\n\n\n')
     # receive an encrypted record to make sure everything works
     print(sock.recv_record())
+
