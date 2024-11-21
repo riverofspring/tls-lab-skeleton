@@ -89,14 +89,14 @@ def recv_server_info(sock: client.TLSSocket) -> None:
 
     Also verifies the certificate's validity.
     """
-    ty, data = sock.recv_record()
+    ty, data = sock.recv_handshake_record()
     # print(ty)
     # print(data[0])
     data = data[1:]
     ext_length = util.unpack(data[:3])
     data = data[3:]
     ext = data
-    ty, data = sock.recv_record()
+    ty, data = sock.recv_handshake_record()
     # if data[0] != 0x0b:
     #     print("what")
     #     print(data[0])
@@ -104,10 +104,10 @@ def recv_server_info(sock: client.TLSSocket) -> None:
     ext_length = util.unpack(data[:3])
     data = data[3:]
     ext = data
-    ty, data = sock.recv_handshake_record()
-    # print(ty)
-    # print(data[0])
-    data = data[1:]
+    # ty, data = sock.recv_handshake_record()
+    # # print(ty)
+    # # print(data[0])
+    # data = data[1:]
     certificates_length = util.unpack(data[:3])
     # print(certificates_length)
     data = data[3:]
@@ -126,8 +126,12 @@ def finish_handshake(sock: client.TLSSocket, handshake_secret: bytes) -> None:
 
     Takes in the shared secret from key exchange.
     """
+    transcript = sock.transcript_hash.digest()
+    x = sock.server_params.original_secret
+    m = cryptoimpl.compute_finish(x, transcript).digest()
+    k = cryptoimpl.compute_finish(handshake_secret, transcript).digest()
     ty, data = sock.recv_handshake_record()
-    send = cryptoimpl.compute_finish(handshake_secret, sock.transcript_hash.digest())
+    send = cryptoimpl.compute_finish(sock.client_params.original_secret, sock.transcript_hash.digest())
     sock.send_handshake_record(HandshakeType.FINISHED, send.digest())
     # print(ty)
     # TODO: implement
